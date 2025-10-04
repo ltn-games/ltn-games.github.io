@@ -488,15 +488,7 @@
                         cellElement.dataset.row = row;
                         cellElement.dataset.col = col;
 
-                        // Single click to flag
-                        const clickHandler = (e) => {
-                            if(!longPress) {
-                               this.toggleFlag(row, col);
-                            }
-                            e.preventDefault();
-                        }
-
-                        // Long press to reveal
+                        // Long press to reveal, short press/click to flag
                         let pressTimer = null;
                         let longPress = false;
                         
@@ -512,17 +504,27 @@
                         const endPress = (e) => {
                             e.preventDefault();
                             clearTimeout(pressTimer);
+                            // If it wasn't a long press, toggle flag
+                            if (!longPress) {
+                                this.toggleFlag(row, col);
+                            }
                         };
 
+                        const cancelPress = (e) => {
+                            e.preventDefault();
+                            clearTimeout(pressTimer);
+                            longPress = false;
+                        };
+
+                        // Mouse events
                         cellElement.addEventListener('mousedown', startPress);
                         cellElement.addEventListener('mouseup', endPress);
-                        cellElement.addEventListener('mouseleave', endPress);
-                        cellElement.addEventListener('click', clickHandler);
+                        cellElement.addEventListener('mouseleave', cancelPress);
 
                         // Touch events for mobile
                         cellElement.addEventListener('touchstart', startPress);
                         cellElement.addEventListener('touchend', endPress);
-                        cellElement.addEventListener('touchcancel', endPress);
+                        cellElement.addEventListener('touchcancel', cancelPress);
                         
                         rowElement.appendChild(cellElement);
                     }
