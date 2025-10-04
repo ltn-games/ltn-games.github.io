@@ -289,6 +289,167 @@
         .controls button {
             margin: 0 5px;
         }
+
+        /* Tutorial Overlay Styles */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tutorial-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-content h2 {
+            margin-top: 0;
+            font-size: 2em;
+            color: #333;
+        }
+
+        .tutorial-content p {
+            font-size: 1.2em;
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .tutorial-btn {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .tutorial-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+
+        /* Tutorial Highlight */
+        .hex-cell.tutorial-highlight {
+            position: relative;
+            animation: tutorial-pulse 1.5s ease-in-out infinite;
+        }
+
+        .hex-cell.tutorial-highlight::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: rgba(255, 235, 59, 0.5);
+            border: 3px solid #ffd700;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @keyframes tutorial-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Tutorial Message Box */
+        .tutorial-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            max-width: 500px;
+            min-width: 300px;
+        }
+
+        .tutorial-message.active {
+            opacity: 1;
+        }
+
+        .tutorial-message-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            text-align: center;
+        }
+
+        .tutorial-message-icon {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Tutorial Progress */
+        .tutorial-progress {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #333;
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tutorial-progress.active {
+            opacity: 1;
+        }
+
+        /* Success animation */
+        @keyframes success-bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .hex-cell.tutorial-success {
+            animation: success-bounce 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -334,6 +495,24 @@
         </div>
     </div>
 
+    <!-- Tutorial Elements -->
+    <div class="tutorial-overlay" id="tutorial-overlay">
+        <div class="tutorial-content">
+            <h2 id="tutorial-title">🎓 Tutorial</h2>
+            <p id="tutorial-description">Learn how to play!</p>
+            <button class="tutorial-btn" id="tutorial-start-btn" onclick="game.tutorialManager.start()">Start Tutorial</button>
+        </div>
+    </div>
+
+    <div class="tutorial-message" id="tutorial-message">
+        <span class="tutorial-message-icon" id="tutorial-message-icon">👆</span>
+        <p class="tutorial-message-text" id="tutorial-message-text">Tap here to flag the mine!</p>
+    </div>
+
+    <div class="tutorial-progress" id="tutorial-progress">
+        Step <span id="tutorial-step">1</span> / <span id="tutorial-total">3</span>
+    </div>
+
     <script>
         
 
@@ -367,11 +546,109 @@
                 this.originalLevelState = null; // Store original level state for restart
                 this.lives = 3; // Add lives system
                 
+                // Tutorial system - embedded data
+                this.tutorialLevelsData = [
+                    {
+                        "gridWidth": 5,
+                        "gridHeight": 5,
+                        "gridSize": 5,
+                        "cells": [
+                            {"r": 1, "c": 1, "isMine": true, "isRevealed": false},
+                            {"r": 1, "c": 2, "isMine": true, "isRevealed": false},
+                            {"r": 2, "c": 1, "isMine": true, "isRevealed": false},
+                            {"r": 2, "c": 2, "isMine": false, "isRevealed": true},
+                            {"r": 2, "c": 3, "isMine": true, "isRevealed": false},
+                            {"r": 3, "c": 1, "isMine": true, "isRevealed": false},
+                            {"r": 3, "c": 2, "isMine": true, "isRevealed": false}
+                        ],
+                        "rowHintsEnabled": [false, false, false, false, false]
+                    },
+                    {
+                        "gridWidth": 5,
+                        "gridHeight": 5,
+                        "gridSize": 5,
+                        "cells": [
+                            {"r": 1, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 1, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 2, "isMine": false, "isRevealed": true},
+                            {"r": 2, "c": 3, "isMine": false, "isRevealed": false},
+                            {"r": 3, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 3, "c": 2, "isMine": false, "isRevealed": false}
+                        ],
+                        "rowHintsEnabled": [false, false, false, false, false]
+                    },
+                    {
+                        "gridWidth": 5,
+                        "gridHeight": 8,
+                        "cells": [
+                            {"r": 0, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 0, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 1, "c": 0, "isMine": false, "isRevealed": false},
+                            {"r": 1, "c": 1, "isMine": false, "isRevealed": true},
+                            {"r": 1, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 5, "c": 2, "isMine": false, "isRevealed": true},
+                            {"r": 5, "c": 3, "isMine": true, "isRevealed": false},
+                            {"r": 6, "c": 2, "isMine": true, "isRevealed": false},
+                            {"r": 6, "c": 3, "isMine": true, "isRevealed": false},
+                            {"r": 6, "c": 4, "isMine": false, "isRevealed": false},
+                            {"r": 7, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 7, "c": 3, "isMine": false, "isRevealed": true}
+                        ],
+                        "rowHintsEnabled": [false, false, false, false, false, false, false, false]
+                    },
+                    {
+                        "gridWidth": 8,
+                        "gridHeight": 9,
+                        "cells": [
+                            {"r": 0, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 0, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 1, "c": 0, "isMine": false, "isRevealed": false},
+                            {"r": 1, "c": 1, "isMine": false, "isRevealed": true},
+                            {"r": 1, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 2, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 3, "c": 2, "isMine": true, "isRevealed": false},
+                            {"r": 3, "c": 5, "isMine": false, "isRevealed": false},
+                            {"r": 3, "c": 6, "isMine": true, "isRevealed": false},
+                            {"r": 4, "c": 3, "isMine": false, "isRevealed": true},
+                            {"r": 4, "c": 4, "isMine": true, "isRevealed": false},
+                            {"r": 4, "c": 5, "isMine": false, "isRevealed": false},
+                            {"r": 4, "c": 6, "isMine": false, "isRevealed": true},
+                            {"r": 4, "c": 7, "isMine": false, "isRevealed": true},
+                            {"r": 5, "c": 2, "isMine": true, "isRevealed": false},
+                            {"r": 5, "c": 5, "isMine": false, "isRevealed": false},
+                            {"r": 5, "c": 6, "isMine": true, "isRevealed": false},
+                            {"r": 6, "c": 1, "isMine": false, "isRevealed": true},
+                            {"r": 6, "c": 2, "isMine": true, "isRevealed": false},
+                            {"r": 7, "c": 0, "isMine": true, "isRevealed": false},
+                            {"r": 7, "c": 1, "isMine": true, "isRevealed": false},
+                            {"r": 7, "c": 2, "isMine": false, "isRevealed": false},
+                            {"r": 8, "c": 1, "isMine": false, "isRevealed": false},
+                            {"r": 8, "c": 2, "isMine": false, "isRevealed": true}
+                        ],
+                        "rowHintsEnabled": [false, false, false, false, false, false, false, false, false]
+                    }
+                ];
+                this.currentTutorialIndex = 0;
+                this.isTutorialMode = true;
+                
+                // Initialize tutorial manager first (before loading level)
+                this.tutorialManager = null; // Will be created after grid setup
+                
                 this.initGrid();
                 this.renderGrid();
                 this.updateDisplay();
                 this.updateLivesDisplay();
                 this.updateRowHintsDisplay();
+                
+                // Initialize tutorial manager
+                this.tutorialManager = new TutorialManager(this);
+                
+                // Load first tutorial level on start
+                this.loadTutorialLevel(0);
             }
 
             initGrid() {
@@ -499,7 +776,7 @@
                                 this.revealCell(row, col);
                                 cellElement.classList.remove('scaling');
                                 longPress = true;
-                            }, 500);
+                            }, 250);
                         };
 
                         const endPress = (e) => {
@@ -589,7 +866,6 @@
 
                 const cell = this.grid[row][col];
                 cell.isRevealed = true;
-                this.revealedCells++;
 
                 if (cell.isMine) {
                     // Decrement lives instead of immediately ending the game
@@ -618,6 +894,8 @@
                     return;
                 }
 
+                // Only increment revealedCells for safe cells (not mines)
+                this.revealedCells++;
                 this.updateCellDisplay(row, col);
                 this.checkWin();
             }
@@ -628,11 +906,18 @@
                 }
 
                 const cell = this.grid[row][col];
+                const wasFlagged = cell.isFlagged;
                 cell.isFlagged = !cell.isFlagged;
                 this.flagCount += cell.isFlagged ? 1 : -1;
                 
                 this.updateCellDisplay(row, col);
                 this.updateDisplay();
+                
+                // Notify tutorial manager
+                if (this.tutorialManager && this.tutorialManager.active) {
+                    this.tutorialManager.onCellAction(row, col, 'flag', cell.isFlagged, wasFlagged);
+                }
+                
                 this.checkWin();
             }
 
@@ -655,13 +940,35 @@
                 const activeMineCells = activeCells.length - activeSafeCells;
                 
                 const correctlyFlaggedMines = activeCells.filter(c => c.isMine && c.isFlagged).length;
+                const revealedMinesCount = activeCells.filter(c => c.isMine && c.isRevealed).length;
                 const totalFlagged = activeCells.filter(c => c.isFlagged).length;
+                const unrevealedMinesCount = activeMineCells - revealedMinesCount;
 
-                // Win condition: All safe cells are revealed, and all mines are flagged.
-                if (this.revealedCells === activeSafeCells && correctlyFlaggedMines === activeMineCells && totalFlagged === activeMineCells) {
+                // Win condition: All safe cells are revealed, and all unrevealed mines are flagged.
+                // Revealed mines (mistakes) don't need to be flagged since they're already revealed.
+                if (this.revealedCells === activeSafeCells && 
+                    correctlyFlaggedMines === unrevealedMinesCount && 
+                    totalFlagged === unrevealedMinesCount) {
                     this.gameOver = true;
-                    this.showGameStatus('🎉 Congratulations! You won!', 'win');
                     this.stopTimer();
+                    
+                    // Check if in tutorial mode
+                    if (this.isTutorialMode) {
+                        // Check if there are more tutorial levels
+                        if (this.currentTutorialIndex < this.tutorialLevelsData.length - 1) {
+                            this.showGameStatus(`🎉 Level Complete! Loading next level...`, 'win');
+                            // Load next tutorial after 2 seconds
+                            setTimeout(() => {
+                                this.currentTutorialIndex++;
+                                this.loadTutorialLevel(this.currentTutorialIndex);
+                            }, 2000);
+                        } else {
+                            // All tutorials completed
+                            this.showGameStatus('🎊 All Tutorial Levels Complete! No more levels left.', 'win');
+                        }
+                    } else {
+                        this.showGameStatus('🎉 Congratulations! You won!', 'win');
+                    }
                 }
             }
 
@@ -719,6 +1026,11 @@
 
                 this.stopTimer();
                 this.clearHighlights();
+                
+                // Reset tutorial if it exists
+                if (this.tutorialManager) {
+                    this.tutorialManager.reset();
+                }
                 
                 this.isCustomLevel = true;
                 this.gameStarted = false;
@@ -910,6 +1222,229 @@
                     }
                 }
             }
+
+            loadTutorialLevel(index) {
+                if (index < 0 || index >= this.tutorialLevelsData.length) {
+                    console.error('Invalid tutorial level index');
+                    return;
+                }
+
+                const levelData = this.tutorialLevelsData[index];
+                this.loadLevel(levelData);
+                this.isTutorialMode = true;
+                this.currentTutorialIndex = index;
+                
+                // Show tutorial on first level
+                if (index === 0 && this.tutorialManager) {
+                    setTimeout(() => {
+                        this.tutorialManager.showIntro();
+                    }, 500);
+                }
+            }
+        }
+
+        // Tutorial Manager Class
+        class TutorialManager {
+            constructor(game) {
+                this.game = game;
+                this.active = false;
+                this.currentStep = 0;
+                this.steps = [];
+                
+                // Define tutorial steps for Level 1 (Flag mechanic)
+                this.level1Steps = [
+                    {
+                        message: "The 6 means: 6 mines around it! Tap this mine to flag it",
+                        icon: "💡",
+                        targetCell: { r: 1, c: 1 },
+                        action: 'flag',
+                        flagState: true
+                    },
+                    {
+                        message: "Perfect! Each neighbor is a mine. Flag this one (2/6)",
+                        icon: "✨",
+                        targetCell: { r: 1, c: 2 },
+                        action: 'flag',
+                        flagState: true
+                    },
+                    {
+                        message: "Great! All 6 cells around the number are mines (3/6)",
+                        icon: "🎯",
+                        targetCell: { r: 2, c: 1 },
+                        action: 'flag',
+                        flagState: true
+                    },
+                    {
+                        message: "Excellent! You understand now! (4/6)",
+                        icon: "⭐",
+                        targetCell: { r: 2, c: 3 },
+                        action: 'flag',
+                        flagState: true
+                    },
+                    {
+                        message: "Almost there! Two more mines to flag (5/6)",
+                        icon: "💪",
+                        targetCell: { r: 3, c: 1 },
+                        action: 'flag',
+                        flagState: true
+                    },
+                    {
+                        message: "Last mine! Tap to complete the tutorial! (6/6)",
+                        icon: "🎉",
+                        targetCell: { r: 3, c: 2 },
+                        action: 'flag',
+                        flagState: true
+                    }
+                ];
+            }
+
+            showIntro() {
+                const overlay = document.getElementById('tutorial-overlay');
+                const title = document.getElementById('tutorial-title');
+                const description = document.getElementById('tutorial-description');
+                
+                title.textContent = '🎓 Level 1: Understanding Numbers';
+                description.innerHTML = 'The number <strong>6</strong> means there are<br><strong>6 mines</strong> around that cell!<br><br>💡 Tap cells to flag all the mines';
+                
+                overlay.classList.add('active');
+            }
+
+            start() {
+                // Hide intro overlay
+                document.getElementById('tutorial-overlay').classList.remove('active');
+                
+                // Initialize tutorial
+                this.active = true;
+                this.currentStep = 0;
+                this.steps = this.level1Steps;
+                
+                // Show progress
+                document.getElementById('tutorial-progress').classList.add('active');
+                document.getElementById('tutorial-total').textContent = this.steps.length;
+                
+                // Start first step
+                this.showStep(0);
+            }
+
+            showStep(stepIndex) {
+                if (stepIndex >= this.steps.length) {
+                    this.complete();
+                    return;
+                }
+
+                const step = this.steps[stepIndex];
+                this.currentStep = stepIndex;
+                
+                // Update progress
+                document.getElementById('tutorial-step').textContent = stepIndex + 1;
+                
+                // Show message
+                const messageBox = document.getElementById('tutorial-message');
+                const messageText = document.getElementById('tutorial-message-text');
+                const messageIcon = document.getElementById('tutorial-message-icon');
+                
+                messageText.textContent = step.message;
+                messageIcon.textContent = step.icon;
+                messageBox.classList.add('active');
+                
+                // Highlight target cell
+                this.highlightCell(step.targetCell.r, step.targetCell.c);
+            }
+
+            highlightCell(row, col) {
+                // Remove previous highlights
+                document.querySelectorAll('.hex-cell.tutorial-highlight').forEach(cell => {
+                    cell.classList.remove('tutorial-highlight');
+                });
+                
+                // Add highlight to target cell
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.add('tutorial-highlight');
+                }
+            }
+
+            onCellAction(row, col, action, newState, oldState) {
+                if (!this.active || this.currentStep >= this.steps.length) return;
+                
+                const step = this.steps[this.currentStep];
+                
+                // Check if this is the correct cell and action
+                if (row === step.targetCell.r && 
+                    col === step.targetCell.c && 
+                    action === step.action) {
+                    
+                    // Check if the flag state matches what we expect
+                    if (action === 'flag' && newState === step.flagState) {
+                        this.onCorrectAction(row, col);
+                    }
+                }
+            }
+
+            onCorrectAction(row, col) {
+                // Add success animation
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.add('tutorial-success');
+                    setTimeout(() => {
+                        cell.classList.remove('tutorial-success');
+                    }, 500);
+                }
+                
+                // Remove highlight
+                cell.classList.remove('tutorial-highlight');
+                
+                // Move to next step after a short delay
+                setTimeout(() => {
+                    this.currentStep++;
+                    this.showStep(this.currentStep);
+                }, 600);
+            }
+
+            complete() {
+                this.active = false;
+                
+                // Hide tutorial elements
+                document.getElementById('tutorial-message').classList.remove('active');
+                document.getElementById('tutorial-progress').classList.remove('active');
+                
+                // Remove all highlights
+                document.querySelectorAll('.hex-cell.tutorial-highlight').forEach(cell => {
+                    cell.classList.remove('tutorial-highlight');
+                });
+                
+                // Show completion message
+                const overlay = document.getElementById('tutorial-overlay');
+                const title = document.getElementById('tutorial-title');
+                const description = document.getElementById('tutorial-description');
+                const startBtn = document.getElementById('tutorial-start-btn');
+                
+                title.textContent = '🎉 Tutorial Complete!';
+                description.innerHTML = 'Now you understand!<br>Numbers show how many mines are nearby.';
+                startBtn.style.display = 'none';
+                
+                overlay.classList.add('active');
+                
+                // Auto-close after 2 seconds
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 2000);
+            }
+
+            reset() {
+                this.active = false;
+                this.currentStep = 0;
+                
+                // Hide all tutorial elements
+                document.getElementById('tutorial-overlay').classList.remove('active');
+                document.getElementById('tutorial-message').classList.remove('active');
+                document.getElementById('tutorial-progress').classList.remove('active');
+                
+                // Remove all highlights
+                document.querySelectorAll('.hex-cell.tutorial-highlight').forEach(cell => {
+                    cell.classList.remove('tutorial-highlight');
+                });
+            }
         }
 
         let game = new HexMinesweeper();
@@ -924,6 +1459,8 @@
                 try {
                     const levelData = JSON.parse(e.target.result);
                     game.loadLevel(levelData);
+                    // Disable tutorial mode when manually loading a level
+                    game.isTutorialMode = false;
                 } catch (error) {
                     console.error("Error loading or parsing level file:", error);
                     alert("Failed to load level. Please make sure it's a valid level file.");
