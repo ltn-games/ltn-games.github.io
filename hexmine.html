@@ -124,6 +124,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             margin: 0 1px;
             transform: scale(1);
+            transform-origin: 50% 100%;
         }
 
         .hex-cell.scaling {
@@ -144,15 +145,6 @@
             z-index: -1;
             opacity: 0;
             transition: opacity 0.3s ease;
-        }
-
-        .hex-cell:hover:before {
-            opacity: 1;
-        }
-
-        .hex-cell:hover:not(.scaling) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
 
         .hex-cell.revealed {
