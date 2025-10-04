@@ -123,6 +123,13 @@
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             margin: 0 1px;
+            transform: scale(1);
+        }
+
+        .hex-cell.scaling {
+            transform: scale(1.5) !important;
+            transition: transform 0.5s ease-out !important;
+            z-index: 10;
         }
 
         .hex-cell:before {
@@ -143,7 +150,7 @@
             opacity: 1;
         }
 
-        .hex-cell:hover {
+        .hex-cell:hover:not(.scaling) {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
@@ -495,8 +502,10 @@
                         const startPress = (e) => {
                             e.preventDefault();
                             longPress = false;
+                            cellElement.classList.add('scaling');
                             pressTimer = setTimeout(() => {
                                 this.revealCell(row, col);
+                                cellElement.classList.remove('scaling');
                                 longPress = true;
                             }, 500);
                         };
@@ -504,6 +513,7 @@
                         const endPress = (e) => {
                             e.preventDefault();
                             clearTimeout(pressTimer);
+                            cellElement.classList.remove('scaling');
                             // If it wasn't a long press, toggle flag
                             if (!longPress) {
                                 this.toggleFlag(row, col);
@@ -513,6 +523,7 @@
                         const cancelPress = (e) => {
                             e.preventDefault();
                             clearTimeout(pressTimer);
+                            cellElement.classList.remove('scaling');
                             longPress = false;
                         };
 
