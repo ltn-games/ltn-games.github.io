@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagonal Minesweeper</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d3d3d3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: gray;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 20px 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .mines-left-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mines-left-display .label {
+            font-size: 1em;
+        }
+
+        .mines-left-display .count {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .timer-display {
+            position: absolute;
+            right: 0;
+            top: 15%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+
+        .lives-display {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            display: flex;
+            gap: 5px;
+        }
+
+        .heart {
+            transition: all 0.3s ease;
+        }
+
+        .heart.lost {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+
+        .hex-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hex-row {
+            display: flex;
+            margin-bottom: -12px;
+        }
+
+        .hex-row:nth-child(even) {
+            margin-left: 51px;
+        }
+
+        .hex-cell {
+            width: 50px;
+            height: 58px;
+            background: linear-gradient(145deg, #f8f8f8, #e3e4ea);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            user-select: none;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 0 1px;
+        }
+
+        .hex-cell:before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hex-cell:hover:before {
+            opacity: 1;
+        }
+
+        .hex-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .hex-cell.revealed {
+            background: linear-gradient(145deg, rgba(248, 249, 250, 0.4), rgba(233, 236, 239, 0.4));
+            color: #333;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hex-cell.flagged {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .hex-cell.mine {
+            background: linear-gradient(145deg, #ff4757, #ff3742);
+            color: white;
+        }
+
+        .hex-cell.number-1 { color: #0066cc; }
+        .hex-cell.number-2 { color: #009900; }
+        .hex-cell.number-3 { color: #cc0000; }
+        .hex-cell.number-4 { color: #660099; }
+        .hex-cell.number-5 { color: #990000; }
+        .hex-cell.number-6 { color: #009999; }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .size-controls {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-controls label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
+        }
+
+        .size-controls input {
+            width: 70px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 0 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(145deg, #9E9E9E, #757575);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .hex-cell.ambiguous::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: rgba(255, 235, 59, 0.7);
+            z-index: 5;
+            animation: fade-in-out 1.5s infinite;
+        }
+
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .game-over {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .win { color: #4ecdc4; }
+        .lose { color: #ff6b6b; }
+
+        #row-hints-container {
+            display: flex;
+            flex-direction: column;
+            margin-right: 15px;
+            justify-content: center;
+        }
+
+        #row-hints-container.hidden {
+            display: none;
+        }
+
+        .row-hint {
+            width: 30px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: green;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-bottom: -12px;
+            transition: all 0.3s ease;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .controls button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- <h1>⬡ Hexagonal Minesweeper - Core Gameplay ⬡</h1> -->
+        
+        <div class="game-info">
+            <div class="mines-left-display">
+                <div class="label">💣 Mines Left</div>
+                <div class="count" id="mine-count">5</div>
+            </div>
+            <div class="lives-display" id="lives-display">
+                <span class="heart" id="heart-1">❤️</span>
+                <span class="heart" id="heart-2">❤️</span>
+                <span class="heart" id="heart-3">❤️</span>
+            </div>
+            <!-- <div class="timer-display">
+                ⏱️ Time: <span id="timer">0</span>s
+            </div> -->
+        </div>
+
+        <div style="display: flex; justify-content: center; align-items: flex-start;">
+            <div id="row-hints-container"></div>
+            <div class="hex-grid" id="game-grid"></div>
+        </div>
+
+        <div class="controls" id="main-controls">
+            
+            <button class="btn" id="restart-level-btn" onclick="restartLevel()" style="display: none;">🔄 Restart Level</button>
+            <!-- <button class="btn" onclick="toggleDifficulty()">⚡ Difficulty: <span id="difficulty">Easy</span></button> -->
+            <button class="btn" onclick="document.getElementById('level-file-input').click()">📂 Load Level</button>
+            <input type="file" id="level-file-input" style="display: none" onchange="loadLevelFromFile(event)" accept=".json">
+            
+        </div>
+
+        <div class="game-over" id="game-status"></div>
+
+        <div class="instructions">
+            <strong>How to play:</strong><br>
+            👆 Single tap to flag/unflag a mine<br>
+            🖱️ Long press (hold) to reveal a cell<br>
+            🎯 Find all mines without revealing them!
+        </div>
+    </div>
+
+    <script>
+        
+
+        class HexMinesweeper {
+            constructor() {
+                this.difficulties = {
+                    'Easy':   { width: 5,  height: 5,  mines: 10 },
+                    'Medium': { width: 8,  height: 8,  mines: 22 },
+                    'Hard':   { width: 12, height: 12, mines: 40 }
+                };
+                this.currentDifficulty = 'Easy';
+
+                const difficulty = this.difficulties[this.currentDifficulty];
+                this.gridWidth = difficulty.width;
+                this.gridHeight = difficulty.height;
+                this.mineCount = difficulty.mines;
+
+                this.isCustomLevel = false;
+                this.rowMineCounts = [];
+                this.rowHintsEnabled = [];
+
+                this.flagCount = 0;
+                this.gameStarted = false;
+                this.gameOver = false;
+                this.startTime = null;
+                this.timer = null;
+                this.grid = [];
+                this.revealedCells = 0;
+                this.revealedMines = 0; // Track revealed mines
+                this.totalSafeCells = this.gridWidth * this.gridHeight - this.mineCount;
+                this.originalLevelState = null; // Store original level state for restart
+                this.lives = 3; // Add lives system
+                
+                this.initGrid();
+                this.renderGrid();
+                this.updateDisplay();
+                this.updateLivesDisplay();
+                this.updateRowHintsDisplay();
+            }
+
+            initGrid() {
+                this.grid = [];
+                this.rowHintsEnabled = Array(this.gridHeight).fill(false);
+                for (let row = 0; row < this.gridHeight; row++) {
+                    this.grid[row] = [];
+                    for (let col = 0; col < this.gridWidth; col++) {
+                        this.grid[row][col] = {
+                            isMine: false,
+                            isRevealed: false,
+                            isFlagged: false,
+                            neighborMines: 0,
+                            isActive: true
+                        };
+                    }
+                }
+                this.recalculateAllNeighborCounts();
+                this.updateDisplay();
+                this.updateRowHintsDisplay();
+            }
+
+            placeMines() {
+                let minesPlaced = 0;
+                const activeCells = [];
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        if (this.grid[r][c].isActive) {
+                            activeCells.push({r, c});
+                        }
+                    }
+                }
+
+                // Ensure we don't try to place more mines than available active cells
+                const minesToPlace = Math.min(this.mineCount, activeCells.length);
+
+                while (minesPlaced < minesToPlace) {
+                    const randomIndex = Math.floor(Math.random() * activeCells.length);
+                    const { r, c } = activeCells[randomIndex];
+                    
+                    if (!this.grid[r][c].isMine) {
+                        this.grid[r][c].isMine = true;
+                        minesPlaced++;
+                    }
+                    // Remove cell to avoid picking it again
+                    activeCells.splice(randomIndex, 1);
+                }
+
+                this.recalculateAllNeighborCounts();
+            }
+
+            recalculateAllNeighborCounts() {
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        if (this.grid[r][c].isActive) {
+                            this.grid[r][c].neighborMines = 0;
+                        }
+                    }
+                }
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        if (this.grid[r][c].isActive && this.grid[r][c].isMine) {
+                            const neighbors = this.getNeighbors(r, c);
+                            for (const [nr, nc] of neighbors) {
+                                if (this.grid[nr][nc].isActive && !this.grid[nr][nc].isMine) {
+                                    this.grid[nr][nc].neighborMines++;
+                                }
+                            }
+                        }
+                    }
+                }
+                this.calculateRowMineCounts();
+            }
+
+            getNeighbors(row, col, grid = this.grid) {
+                const neighbors = [];
+                const offsets = row % 2 === 0 ?
+                    [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]] :
+                    [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]];
+                
+                for (const [dr, dc] of offsets) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < this.gridHeight &&
+                        newCol >= 0 && newCol < this.gridWidth &&
+                        grid[newRow][newCol].isActive
+                    ) {
+                        neighbors.push([newRow, newCol]);
+                    }
+                }
+                return neighbors;
+            }
+
+            renderGrid() {
+                const gridElement = document.getElementById('game-grid');
+                const hintsContainer = document.getElementById('row-hints-container');
+                gridElement.innerHTML = '';
+                hintsContainer.innerHTML = '';
+
+                for (let row = 0; row < this.gridHeight; row++) {
+                    const rowElement = document.createElement('div');
+                    rowElement.className = 'hex-row';
+                    
+                    const hintElement = document.createElement('div');
+                    hintElement.className = 'row-hint';
+                    hintElement.id = `row-hint-${row}`;
+
+                    hintsContainer.appendChild(hintElement);
+
+                    for (let col = 0; col < this.gridWidth; col++) {
+                        const cellElement = document.createElement('div');
+                        cellElement.className = 'hex-cell';
+                        cellElement.dataset.row = row;
+                        cellElement.dataset.col = col;
+
+                        // Single click to flag
+                        const clickHandler = (e) => {
+                            if(!longPress) {
+                               this.toggleFlag(row, col);
+                            }
+                            e.preventDefault();
+                        }
+
+                        // Long press to reveal
+                        let pressTimer = null;
+                        let longPress = false;
+                        
+                        const startPress = (e) => {
+                            e.preventDefault();
+                            longPress = false;
+                            pressTimer = setTimeout(() => {
+                                this.revealCell(row, col);
+                                longPress = true;
+                            }, 500);
+                        };
+
+                        const endPress = (e) => {
+                            e.preventDefault();
+                            clearTimeout(pressTimer);
+                        };
+
+                        cellElement.addEventListener('mousedown', startPress);
+                        cellElement.addEventListener('mouseup', endPress);
+                        cellElement.addEventListener('mouseleave', endPress);
+                        cellElement.addEventListener('click', clickHandler);
+
+                        // Touch events for mobile
+                        cellElement.addEventListener('touchstart', startPress);
+                        cellElement.addEventListener('touchend', endPress);
+                        cellElement.addEventListener('touchcancel', endPress);
+                        
+                        rowElement.appendChild(cellElement);
+                    }
+                    gridElement.appendChild(rowElement);
+                }
+
+                // Update display for all cells after they are in the DOM
+                this.updateRowHintsDisplay();
+                for (let row = 0; row < this.gridHeight; row++) {
+                    for (let col = 0; col < this.gridWidth; col++) {
+                        this.updateCellDisplay(row, col);
+                    }
+                }
+            }
+
+            updateCellDisplay(row, col) {
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                const gridCell = this.grid[row][col];
+                
+                cell.className = 'hex-cell';
+                cell.textContent = '';
+                cell.style.visibility = 'visible';
+
+                if (!gridCell.isActive) {
+                    cell.style.visibility = 'hidden';
+                    return;
+                }
+                
+                if (gridCell.isFlagged) {
+                    cell.classList.add('flagged');
+                    cell.textContent = '🚩';
+                } else if (gridCell.isRevealed) {
+                    cell.classList.add('revealed');
+                    if (gridCell.isMine) {
+                        cell.classList.add('mine');
+                        cell.textContent = '💣';
+                    } else {
+                        cell.textContent = gridCell.neighborMines;
+                        if (gridCell.neighborMines > 0) {
+                            cell.classList.add(`number-${gridCell.neighborMines}`);
+                        }
+                    }
+                }
+            }
+
+            revealCell(row, col) {
+                if (this.gameOver || !this.grid[row][col].isActive || this.grid[row][col].isRevealed || this.grid[row][col].isFlagged) {
+                    return;
+                }
+
+                if (!this.gameStarted) {
+                    this.gameStarted = true;
+                    this.startTime = Date.now();
+                    if (!this.isCustomLevel) {
+                        this.placeMines();
+                    }
+                    this.startTimer();
+                }
+
+                const cell = this.grid[row][col];
+                cell.isRevealed = true;
+                this.revealedCells++;
+
+                if (cell.isMine) {
+                    // Decrement lives instead of immediately ending the game
+                    this.lives--;
+                    this.revealedMines++; // Track revealed mines
+                    this.updateLivesDisplay();
+                    this.updateCellDisplay(row, col);
+                    this.updateDisplay(); // Update mines left count
+                    
+                    if (this.lives <= 0) {
+                        // Game over only when all lives are lost
+                        this.gameOver = true;
+                        this.revealAllMines();
+                        this.showGameStatus('💥 Game Over! You lost all lives!', 'lose');
+                        this.stopTimer();
+                    } else {
+                        // Show a warning message but continue playing
+                        this.showGameStatus(`💔 You hit a mine! ${this.lives} ${this.lives === 1 ? 'life' : 'lives'} remaining!`, 'lose');
+                        // Clear the warning after 2 seconds
+                        setTimeout(() => {
+                            if (!this.gameOver) {
+                                document.getElementById('game-status').textContent = '';
+                            }
+                        }, 2000);
+                    }
+                    return;
+                }
+
+                this.updateCellDisplay(row, col);
+                this.checkWin();
+            }
+
+            toggleFlag(row, col) {
+                if (this.gameOver || this.grid[row][col].isRevealed) {
+                    return;
+                }
+
+                const cell = this.grid[row][col];
+                cell.isFlagged = !cell.isFlagged;
+                this.flagCount += cell.isFlagged ? 1 : -1;
+                
+                this.updateCellDisplay(row, col);
+                this.updateDisplay();
+                this.checkWin();
+            }
+
+            revealAllMines() {
+                for (let row = 0; row < this.gridHeight; row++) {
+                    for (let col = 0; col < this.gridWidth; col++) {
+                        if (this.grid[row][col].isMine) {
+                            this.grid[row][col].isRevealed = true;
+                            this.updateCellDisplay(row, col);
+                        }
+                    }
+                }
+            }
+
+            checkWin() {
+                if (this.gameOver) return;
+
+                const activeCells = this.grid.flat().filter(c => c.isActive);
+                const activeSafeCells = activeCells.filter(c => !c.isMine).length;
+                const activeMineCells = activeCells.length - activeSafeCells;
+                
+                const correctlyFlaggedMines = activeCells.filter(c => c.isMine && c.isFlagged).length;
+                const totalFlagged = activeCells.filter(c => c.isFlagged).length;
+
+                // Win condition: All safe cells are revealed, and all mines are flagged.
+                if (this.revealedCells === activeSafeCells && correctlyFlaggedMines === activeMineCells && totalFlagged === activeMineCells) {
+                    this.gameOver = true;
+                    this.showGameStatus('🎉 Congratulations! You won!', 'win');
+                    this.stopTimer();
+                }
+            }
+
+            showGameStatus(message, type) {
+                const statusElement = document.getElementById('game-status');
+                statusElement.textContent = message;
+                statusElement.className = `game-over ${type}`;
+            }
+
+            startTimer() {
+                this.timer = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const timerElement = document.getElementById('timer');
+                    if (timerElement) {
+                        timerElement.textContent = elapsed;
+                    }
+                }, 1000);
+            }
+
+            stopTimer() {
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+            }
+
+            updateDisplay() {
+                // Subtract both flagged and revealed mines from the total
+                document.getElementById('mine-count').textContent = this.mineCount - this.flagCount - this.revealedMines;
+                const difficultyElement = document.getElementById('difficulty');
+                if (difficultyElement) {
+                    difficultyElement.textContent = this.currentDifficulty;
+                }
+            }
+
+            updateLivesDisplay() {
+                // Update heart icons based on remaining lives
+                for (let i = 1; i <= 3; i++) {
+                    const heart = document.getElementById(`heart-${i}`);
+                    if (heart) {
+                        if (i > this.lives) {
+                            heart.classList.add('lost');
+                        } else {
+                            heart.classList.remove('lost');
+                        }
+                    }
+                }
+            }
+
+            loadLevel(levelData) {
+                if (!levelData || (!levelData.gridSize && (!levelData.gridWidth || !levelData.gridHeight)) || !levelData.cells) {
+                    alert('Invalid level file format.');
+                    return;
+                }
+
+                this.stopTimer();
+                this.clearHighlights();
+                
+                this.isCustomLevel = true;
+                this.gameStarted = false;
+                this.gameOver = false;
+                this.flagCount = 0;
+                this.revealedCells = 0;
+                this.revealedMines = 0; // Reset revealed mines
+                this.startTime = null;
+                this.lives = 3; // Reset lives when loading a level
+                
+                if (levelData.gridWidth && levelData.gridHeight) {
+                    this.gridWidth = levelData.gridWidth;
+                    this.gridHeight = levelData.gridHeight;
+                } else {
+                    this.gridWidth = levelData.gridSize;
+                    this.gridHeight = levelData.gridSize;
+                }
+                this.initGrid();
+
+                if (levelData.rowHintsEnabled && levelData.rowHintsEnabled.length === this.gridHeight) {
+                    this.rowHintsEnabled = [...levelData.rowHintsEnabled];
+                }
+
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        this.grid[r][c].isActive = false;
+                    }
+                }
+                
+                let mineCount = 0;
+                for (const cellData of levelData.cells) {
+                    const { r, c, isMine, isRevealed } = cellData;
+                    if (r >= 0 && r < this.gridHeight && c >= 0 && c < this.gridWidth) {
+                        const cell = this.grid[r][c];
+                        cell.isActive = true;
+                        if (isMine) {
+                            cell.isMine = true;
+                            mineCount++;
+                        }
+                        if (isRevealed) {
+                            cell.isRevealed = true;
+                            this.revealedCells++;
+                        }
+                    }
+                }
+
+                this.mineCount = mineCount;
+                this.totalSafeCells = levelData.cells.length - mineCount;
+                
+                this.recalculateAllNeighborCounts();
+
+                const timerElement = document.getElementById('timer');
+                if (timerElement) {
+                    timerElement.textContent = '0';
+                }
+                document.getElementById('game-status').textContent = '';
+                this.currentDifficulty = 'Custom';
+
+                this.renderGrid();
+                this.updateDisplay();
+                this.updateLivesDisplay();
+                this.updateRowHintsDisplay();
+                
+                // Save the original state for restart functionality
+                this.saveOriginalLevelState();
+            }
+
+            // --- Solvable Level Generation ---
+            
+            createGridCopy(originalGrid) {
+                return JSON.parse(JSON.stringify(originalGrid));
+            }
+
+            saveOriginalLevelState() {
+                this.originalLevelState = {
+                    grid: this.createGridCopy(this.grid),
+                    gridWidth: this.gridWidth,
+                    gridHeight: this.gridHeight,
+                    mineCount: this.mineCount,
+                    totalSafeCells: this.totalSafeCells,
+                    rowHintsEnabled: [...this.rowHintsEnabled],
+                    currentDifficulty: this.currentDifficulty
+                };
+                // Show the restart button
+                const restartBtn = document.getElementById('restart-level-btn');
+                if (restartBtn) {
+                    restartBtn.style.display = 'inline-block';
+                }
+            }
+
+            restartLevel() {
+                if (!this.originalLevelState) {
+                    return;
+                }
+
+                this.stopTimer();
+                this.clearHighlights();
+                
+                // Restore the original level state
+                this.grid = this.createGridCopy(this.originalLevelState.grid);
+                this.gridWidth = this.originalLevelState.gridWidth;
+                this.gridHeight = this.originalLevelState.gridHeight;
+                this.mineCount = this.originalLevelState.mineCount;
+                this.totalSafeCells = this.originalLevelState.totalSafeCells;
+                this.rowHintsEnabled = [...this.originalLevelState.rowHintsEnabled];
+                this.currentDifficulty = this.originalLevelState.currentDifficulty;
+                
+                // Reset game state
+                this.isCustomLevel = true;
+                this.gameStarted = false;
+                this.gameOver = false;
+                this.flagCount = 0;
+                this.revealedMines = 0; // Reset revealed mines
+                this.startTime = null;
+                this.lives = 3; // Reset lives when restarting
+                
+                // Count pre-revealed cells
+                this.revealedCells = this.grid.flat().filter(c => c.isRevealed && c.isActive).length;
+                
+                const timerElement = document.getElementById('timer');
+                if (timerElement) {
+                    timerElement.textContent = '0';
+                }
+                document.getElementById('game-status').textContent = '';
+                
+                this.renderGrid();
+                this.updateDisplay();
+                this.updateLivesDisplay();
+                this.updateRowHintsDisplay();
+            }
+
+            recalculateAllNeighborCountsOnGrid(grid) {
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        if (grid[r][c].isActive) {
+                            grid[r][c].neighborMines = 0;
+                        }
+                    }
+                }
+                for (let r = 0; r < this.gridHeight; r++) {
+                    for (let c = 0; c < this.gridWidth; c++) {
+                        if (grid[r][c].isActive && grid[r][c].isMine) {
+                            const neighbors = this.getNeighbors(r, c, grid);
+                            for (const [nr, nc] of neighbors) {
+                                if (grid[nr][nc].isActive && !grid[nr][nc].isMine) {
+                                    grid[nr][nc].neighborMines++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            clearHighlights() {
+                document.querySelectorAll('.hex-cell.ambiguous').forEach(cell => {
+                    cell.classList.remove('ambiguous');
+                });
+            }
+
+            calculateRowMineCounts() {
+                this.rowMineCounts = [];
+                for (let r = 0; r < this.gridHeight; r++) {
+                    this.rowMineCounts[r] = this.grid[r].filter(cell => cell.isActive && cell.isMine).length;
+                }
+            }
+
+            updateRowHintsDisplay() {
+                this.calculateRowMineCounts();
+                const anyHintEnabled = this.rowHintsEnabled.some(h => h);
+                const hintsContainer = document.getElementById('row-hints-container');
+
+                // Hide the entire container if no hints are enabled
+                if (!anyHintEnabled) {
+                    hintsContainer.classList.add('hidden');
+                    return;
+                }
+                hintsContainer.classList.remove('hidden');
+
+                for (let r = 0; r < this.gridHeight; r++) {
+                    const hintElement = document.getElementById(`row-hint-${r}`);
+                    if (hintElement) {
+                        const hasActiveCells = this.grid[r].some(c => c.isActive);
+                        hintElement.textContent = '';
+
+                        // Only show if it's enabled in the level design
+                        if (this.rowHintsEnabled[r] && hasActiveCells) {
+                            hintElement.textContent = this.rowMineCounts[r];
+                        }
+                    }
+                }
+            }
+        }
+
+        let game = new HexMinesweeper();
+
+        function loadLevelFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const levelData = JSON.parse(e.target.result);
+                    game.loadLevel(levelData);
+                } catch (error) {
+                    console.error("Error loading or parsing level file:", error);
+                    alert("Failed to load level. Please make sure it's a valid level file.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = null;
+        }
+
+        function restartLevel() {
+            game.restartLevel();
+        }
+
+        // Prevent context menu on long press
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+    </script>
+</body>
+</html>
