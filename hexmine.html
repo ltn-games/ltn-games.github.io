@@ -42,9 +42,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             font-size: 1.2em;
             font-weight: bold;
+            min-height: 120px; /* Increased height for more visual separation */
+            padding: 20px 0; /* Add vertical padding for more space */
         }
 
         .mines-left-display {
@@ -52,6 +54,10 @@
             flex-direction: column;
             align-items: center;
             gap: 5px;
+        }
+
+        .mines-left-display.hidden {
+            display: none;
         }
 
         .mines-left-display .label {
@@ -81,6 +87,23 @@
             font-size: 1.5em;
             display: flex;
             gap: 5px;
+        }
+
+        .lives-display.hidden {
+            display: none;
+        }
+
+        .tutorial-placeholder {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.3;
+            padding: 10px 0; /* Add padding to match the increased space */
+        }
+
+        .tutorial-placeholder.active {
+            display: flex;
         }
 
         .heart {
@@ -133,6 +156,36 @@
             z-index: 10;
         }
 
+        .progress-indicator {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .progress-circle {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 4;
+        }
+
+        .progress-circle-fill {
+            fill: none;
+            stroke: #ff6b6b;
+            stroke-width: 4;
+            stroke-dasharray: 157;
+            stroke-dashoffset: 157;
+            transition: stroke-dashoffset 0.05s linear;
+            stroke-linecap: round;
+        }
+
         .hex-cell:before {
             content: '';
             position: absolute;
@@ -154,8 +207,17 @@
         }
 
         .hex-cell.flagged {
-            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
-            color: white;
+            background: linear-gradient(145deg, #f8f8f8, #e3e4ea);
+            color: #333;
+        }
+
+        .hex-cell.flagged::after {
+            content: '🚩';
+            position: absolute;
+            font-size: 28px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-40%, -50%);
         }
 
         .hex-cell.mine {
@@ -241,6 +303,50 @@
         @keyframes fade-in-out {
             0%, 100% { opacity: 0; }
             50% { opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-2px, -2px) rotate(-2deg); }
+            50% { transform: translate(2px, 2px) rotate(2deg); }
+            75% { transform: translate(-2px, 2px) rotate(-1deg); }
+        }
+
+        .hex-cell.shaking {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .shatter-fragment {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, #f8f8f8, #e3e4ea);
+            pointer-events: none;
+            z-index: 100;
+            opacity: 1;
+        }
+
+        @keyframes shatter-fly {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            60% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(var(--rotate)) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        .shatter-fragment.animating {
+            animation: shatter-fly 0.4s ease-out forwards;
+        }
+
+        .hex-cell.shattering {
+            opacity: 0 !important;
+            transition: opacity 0.1s ease-out !important;
         }
 
         .game-over {
@@ -352,11 +458,29 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
+        .next-level-btn {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .next-level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
 
         /* Tutorial Highlight */
         .hex-cell.tutorial-highlight {
             position: relative;
-            animation: tutorial-pulse 1.5s ease-in-out infinite;
         }
 
         .hex-cell.tutorial-highlight::after {
@@ -371,15 +495,6 @@
             border: 3px solid #ffd700;
             z-index: 5;
             pointer-events: none;
-        }
-
-        @keyframes tutorial-pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
         }
 
         /* Tutorial Message Box */
@@ -437,19 +552,7 @@
             opacity: 1;
         }
 
-        /* Success animation */
-        @keyframes success-bounce {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-        }
-
-        .hex-cell.tutorial-success {
-            animation: success-bounce 0.5s ease;
-        }
+        /* Success animation - REMOVED */
     </style>
 </head>
 <body>
@@ -465,6 +568,10 @@
                 <span class="heart" id="heart-1">❤️</span>
                 <span class="heart" id="heart-2">❤️</span>
                 <span class="heart" id="heart-3">❤️</span>
+            </div>
+            <div class="tutorial-placeholder" id="tutorial-placeholder">
+                <div class="label">🎓 Tutorial Mode</div>
+                <div class="count">Focus on Learning</div>
             </div>
             <!-- <div class="timer-display">
                 ⏱️ Time: <span id="timer">0</span>s
@@ -489,8 +596,8 @@
 
         <div class="instructions">
             <strong>How to play:</strong><br>
-            👆 Single tap to flag/unflag a mine<br>
-            🖱️ Long press (hold) to reveal a cell<br>
+            👆👆 Double tap to reveal a cell<br>
+            👆⏱️ Tap & hold to flag/unflag a mine<br>
             🎯 Find all mines without revealing them!
         </div>
     </div>
@@ -501,6 +608,7 @@
             <h2 id="tutorial-title">🎓 Tutorial</h2>
             <p id="tutorial-description">Learn how to play!</p>
             <button class="tutorial-btn" id="tutorial-start-btn" onclick="game.tutorialManager.start()">Start Tutorial</button>
+            <button class="next-level-btn" id="next-level-btn" onclick="game.loadNextTutorialLevel()" style="display: none;">Next Level →</button>
         </div>
     </div>
 
@@ -630,7 +738,503 @@
                             {"r": 8, "c": 2, "isMine": false, "isRevealed": true}
                         ],
                         "rowHintsEnabled": [false, false, false, false, false, false, false, false, false]
-                    }
+                    },
+                    {
+  "gridWidth": 5,
+  "gridHeight": 5,
+  "gridSize": 5,
+  "cells": [
+    {
+      "r": 0,
+      "c": 0,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 1,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 2,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 3,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 4,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 4,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    }
+  ],
+  "rowHintsEnabled": [
+    false,
+    false,
+    false,
+    false,
+    false
+  ]
+},
+{
+  "gridWidth": 7,
+  "gridHeight": 10,
+  "cells": [
+    {
+      "r": 0,
+      "c": 1,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 0,
+      "c": 5,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 6,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 0,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 1,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 1,
+      "c": 5,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 6,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 2,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 5,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 2,
+      "c": 6,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 3,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 4,
+      "c": 3,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 4,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 5,
+      "c": 0,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 5,
+      "c": 1,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 5,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 5,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 5,
+      "c": 5,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 5,
+      "c": 6,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 6,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 6,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 7,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 7,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 8,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 8,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 8,
+      "c": 5,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 8,
+      "c": 6,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 9,
+      "c": 0,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 9,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 9,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 9,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 9,
+      "c": 5,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 9,
+      "c": 6,
+      "isMine": false,
+      "isRevealed": true
+    }
+  ],
+  "rowHintsEnabled": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ]
+},
+{
+  "gridWidth": 5,
+  "gridHeight": 5,
+  "gridSize": 5,
+  "cells": [
+    {
+      "r": 0,
+      "c": 1,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 2,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 3,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 0,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 1,
+      "c": 4,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 2,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 2,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 2,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 0,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 2,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 3,
+      "isMine": false,
+      "isRevealed": false
+    },
+    {
+      "r": 3,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    },
+    {
+      "r": 4,
+      "c": 1,
+      "isMine": false,
+      "isRevealed": true
+    },
+    {
+      "r": 4,
+      "c": 4,
+      "isMine": true,
+      "isRevealed": false
+    }
+  ],
+  "rowHintsEnabled": [
+    false,
+    false,
+    false,
+    false,
+    false
+  ]
+}
                 ];
                 this.currentTutorialIndex = 0;
                 this.isTutorialMode = true;
@@ -646,6 +1250,9 @@
                 
                 // Initialize tutorial manager
                 this.tutorialManager = new TutorialManager(this);
+                
+                // Hide UI elements immediately since we start in tutorial mode
+                this.tutorialManager.hideUIElements();
                 
                 // Load first tutorial level on start
                 this.loadTutorialLevel(0);
@@ -764,35 +1371,188 @@
                         cellElement.dataset.row = row;
                         cellElement.dataset.col = col;
 
-                        // Long press to reveal, short press/click to flag
+                        // Double tap to reveal, tap & hold to flag
                         let pressTimer = null;
                         let longPress = false;
+                        let lastTapTime = 0;
+                        let progressIndicator = null;
+                        let progressInterval = null;
+                        let progressStart = 0;
+                        let progressDelayTimer = null;
+                        const doubleTapThreshold = 300; // ms between taps
+                        const longPressThreshold = 350; // ms for hold
+                        const progressShowDelay = 150; // ms before showing progress bar
+                        
+                        const createProgressIndicator = (clientX, clientY) => {
+                            const indicator = document.createElement('div');
+                            indicator.className = 'progress-indicator';
+                            indicator.innerHTML = `
+                                <svg class="progress-circle" viewBox="0 0 60 60">
+                                    <circle class="progress-circle-bg" cx="30" cy="30" r="25"></circle>
+                                    <circle class="progress-circle-fill" cx="30" cy="30" r="25"></circle>
+                                </svg>
+                            `;
+                            // Position above the tap location
+                            indicator.style.left = (clientX - 30) + 'px';
+                            indicator.style.top = (clientY - 80) + 'px';
+                            document.body.appendChild(indicator);
+                            return indicator;
+                        };
+                        
+                        const updateProgress = (progressCircle, progress) => {
+                            const circumference = 157; // 2 * PI * 25
+                            const offset = circumference - (progress * circumference);
+                            progressCircle.style.strokeDashoffset = offset;
+                        };
+                        
+                        const removeProgressIndicator = () => {
+                            if (progressIndicator) {
+                                progressIndicator.remove();
+                                progressIndicator = null;
+                            }
+                            if (progressInterval) {
+                                cancelAnimationFrame(progressInterval);
+                                progressInterval = null;
+                            }
+                            if (progressDelayTimer) {
+                                clearTimeout(progressDelayTimer);
+                                progressDelayTimer = null;
+                            }
+                        };
                         
                         const startPress = (e) => {
                             e.preventDefault();
                             longPress = false;
-                            cellElement.classList.add('scaling');
+                            
+                            // Get tap position
+                            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                            
+                            progressStart = Date.now();
+                            
+                            // Delay showing the progress indicator
+                            progressDelayTimer = setTimeout(() => {
+                                // Create progress indicator after delay
+                                progressIndicator = createProgressIndicator(clientX, clientY);
+                                const progressCircle = progressIndicator.querySelector('.progress-circle-fill');
+                                
+                                // Animate progress
+                                const animateProgress = () => {
+                                    const elapsed = Date.now() - progressStart;
+                                    const progress = Math.min(elapsed / longPressThreshold, 1);
+                                    updateProgress(progressCircle, progress);
+                                    
+                                    if (progress < 1) {
+                                        progressInterval = requestAnimationFrame(animateProgress);
+                                    }
+                                };
+                                progressInterval = requestAnimationFrame(animateProgress);
+                            }, progressShowDelay);
+                            
+                            // Start timer for long press (flag)
                             pressTimer = setTimeout(() => {
-                                this.revealCell(row, col);
-                                cellElement.classList.remove('scaling');
+                                this.toggleFlag(row, col);
+                                removeProgressIndicator();
                                 longPress = true;
-                            }, 250);
+                            }, longPressThreshold);
                         };
 
+                        const createShatterEffect = (cellElement) => {
+                            const rect = cellElement.getBoundingClientRect();
+                            const centerX = rect.left + rect.width / 2;
+                            const centerY = rect.top + rect.height / 2;
+                            
+                            // Generate random triangle clip-path
+                            const randomTriangle = () => {
+                                // Create 3 random points for a triangle
+                                const points = [];
+                                for (let i = 0; i < 3; i++) {
+                                    const x = Math.random() * 100;
+                                    const y = Math.random() * 100;
+                                    points.push(`${x}% ${y}%`);
+                                }
+                                return `polygon(${points.join(', ')})`;
+                            };
+                            
+                            // Create 8 fragments for more dramatic effect
+                            const fragmentCount = 8;
+                            const fragments = [];
+                            
+                            for (let i = 0; i < fragmentCount; i++) {
+                                const fragment = document.createElement('div');
+                                fragment.className = 'shatter-fragment';
+                                
+                                // Apply random triangle shape
+                                fragment.style.clipPath = randomTriangle();
+                                
+                                // Calculate random direction for each fragment
+                                const angle = (i / fragmentCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                                const distance = 60 + Math.random() * 30;
+                                const tx = Math.cos(angle) * distance;
+                                const ty = Math.sin(angle) * distance;
+                                const rotate = (Math.random() - 0.5) * 720; // More rotation
+                                
+                                // Set CSS variables for animation
+                                fragment.style.setProperty('--tx', `${tx}px`);
+                                fragment.style.setProperty('--ty', `${ty}px`);
+                                fragment.style.setProperty('--rotate', `${rotate}deg`);
+                                
+                                // Position at cell center
+                                fragment.style.left = (centerX - 25) + 'px';
+                                fragment.style.top = (centerY - 25) + 'px';
+                                
+                                document.body.appendChild(fragment);
+                                fragments.push(fragment);
+                                
+                                // Start animation after a tiny delay to ensure styles are applied
+                                setTimeout(() => {
+                                    fragment.classList.add('animating');
+                                }, 10);
+                            }
+                            
+                            // Clean up fragments after animation
+                            setTimeout(() => {
+                                fragments.forEach(f => f.remove());
+                            }, 500);
+                        };
+                        
                         const endPress = (e) => {
                             e.preventDefault();
                             clearTimeout(pressTimer);
-                            cellElement.classList.remove('scaling');
-                            // If it wasn't a long press, toggle flag
+                            removeProgressIndicator();
+                            
+                            // If it wasn't a long press, check for double tap
                             if (!longPress) {
-                                this.toggleFlag(row, col);
+                                const currentTime = Date.now();
+                                const timeSinceLastTap = currentTime - lastTapTime;
+                                
+                                if (timeSinceLastTap < doubleTapThreshold && timeSinceLastTap > 0) {
+                                    // Double tap detected - create shatter effect then reveal cell
+                                    cellElement.classList.add('shattering');
+                                    createShatterEffect(cellElement);
+                                    
+                                    // Reveal cell after shatter animation starts
+                                    setTimeout(() => {
+                                        this.revealCell(row, col);
+                                        cellElement.classList.remove('shattering');
+                                    }, 100);
+                                    
+                                    lastTapTime = 0; // Reset to prevent triple tap
+                                } else {
+                                    // Single tap - add shake effect and update last tap time
+                                    cellElement.classList.add('shaking');
+                                    setTimeout(() => {
+                                        cellElement.classList.remove('shaking');
+                                    }, 300);
+                                    lastTapTime = currentTime;
+                                }
                             }
                         };
 
                         const cancelPress = (e) => {
                             e.preventDefault();
                             clearTimeout(pressTimer);
-                            cellElement.classList.remove('scaling');
+                            removeProgressIndicator();
                             longPress = false;
                         };
 
@@ -835,7 +1595,7 @@
                 
                 if (gridCell.isFlagged) {
                     cell.classList.add('flagged');
-                    cell.textContent = '🚩';
+                    cell.textContent = '';
                 } else if (gridCell.isRevealed) {
                     cell.classList.add('revealed');
                     if (gridCell.isMine) {
@@ -852,6 +1612,11 @@
 
             revealCell(row, col) {
                 if (this.gameOver || !this.grid[row][col].isActive || this.grid[row][col].isRevealed || this.grid[row][col].isFlagged) {
+                    return;
+                }
+                
+                // Block revealing if tutorial has it disabled
+                if (this.tutorialManager && this.tutorialManager.active && this.tutorialManager.revealingDisabled) {
                     return;
                 }
 
@@ -897,11 +1662,22 @@
                 // Only increment revealedCells for safe cells (not mines)
                 this.revealedCells++;
                 this.updateCellDisplay(row, col);
+                
+                // Notify tutorial manager
+                if (this.tutorialManager && this.tutorialManager.active) {
+                    this.tutorialManager.onCellAction(row, col, 'reveal');
+                }
+                
                 this.checkWin();
             }
 
             toggleFlag(row, col) {
                 if (this.gameOver || this.grid[row][col].isRevealed) {
+                    return;
+                }
+                
+                // Block flagging if tutorial has it disabled
+                if (this.tutorialManager && this.tutorialManager.active && this.tutorialManager.flaggingDisabled) {
                     return;
                 }
 
@@ -956,12 +1732,11 @@
                     if (this.isTutorialMode) {
                         // Check if there are more tutorial levels
                         if (this.currentTutorialIndex < this.tutorialLevelsData.length - 1) {
-                            this.showGameStatus(`🎉 Level Complete! Loading next level...`, 'win');
-                            // Load next tutorial after 2 seconds
-                            setTimeout(() => {
-                                this.currentTutorialIndex++;
-                                this.loadTutorialLevel(this.currentTutorialIndex);
-                            }, 2000);
+                            // If tutorial is active, let it handle the completion (it will call showLevelCompleteOverlay)
+                            // Otherwise show level complete directly
+                            if (!this.tutorialManager || !this.tutorialManager.active) {
+                                this.showLevelCompleteOverlay();
+                            }
                         } else {
                             // All tutorials completed
                             this.showGameStatus('🎊 All Tutorial Levels Complete! No more levels left.', 'win');
@@ -969,6 +1744,46 @@
                     } else {
                         this.showGameStatus('🎉 Congratulations! You won!', 'win');
                     }
+                }
+            }
+
+            showLevelCompleteOverlay() {
+                const overlay = document.getElementById('tutorial-overlay');
+                const title = document.getElementById('tutorial-title');
+                const description = document.getElementById('tutorial-description');
+                const startBtn = document.getElementById('tutorial-start-btn');
+                const nextLevelBtn = document.getElementById('next-level-btn');
+                
+                title.textContent = '🎉 Level Complete!';
+                
+                // Add tutorial-specific educational message based on level
+                let message = '';
+                if (this.tutorialManager && this.currentTutorialIndex === 0) {
+                    // Level 1 completion
+                    message = '✨ Now you understand!<br><strong>Numbers show how many mines are around it.</strong><br><strong>Tap & hold to flag mines</strong><br><br>';
+                } else if (this.tutorialManager && this.currentTutorialIndex === 1) {
+                    // Level 2 completion
+                    message = '✨ You\'ve learned revealing!<br><strong>⚠️ Only reveal cells you\'re SURE are safe</strong><br><strong>💡 0 = No mines around = All neighbors safe</strong><br><strong>💥 Revealing a mine costs a life</strong><br><strong>👆👆 Double tap to reveal</strong><br><br>';
+                }
+                
+                message += 'Ready for the next challenge?';
+                description.innerHTML = message;
+                
+                startBtn.style.display = 'none';
+                nextLevelBtn.style.display = 'inline-block';
+                
+                overlay.classList.add('active');
+            }
+
+            loadNextTutorialLevel() {
+                // Hide overlay
+                const overlay = document.getElementById('tutorial-overlay');
+                overlay.classList.remove('active');
+                
+                // Load next level
+                if (this.currentTutorialIndex < this.tutorialLevelsData.length - 1) {
+                    this.currentTutorialIndex++;
+                    this.loadTutorialLevel(this.currentTutorialIndex);
                 }
             }
 
@@ -1094,6 +1909,11 @@
                 this.updateLivesDisplay();
                 this.updateRowHintsDisplay();
                 
+                // Show UI elements for custom levels (non-tutorial)
+                if (!this.isTutorialMode && this.tutorialManager) {
+                    this.tutorialManager.showUIElements();
+                }
+                
                 // Save the original state for restart functionality
                 this.saveOriginalLevelState();
             }
@@ -1160,6 +1980,11 @@
                 this.updateDisplay();
                 this.updateLivesDisplay();
                 this.updateRowHintsDisplay();
+                
+                // Show UI elements for non-tutorial levels when restarting
+                if (!this.isTutorialMode && this.tutorialManager) {
+                    this.tutorialManager.showUIElements();
+                }
             }
 
             recalculateAllNeighborCountsOnGrid(grid) {
@@ -1234,10 +2059,10 @@
                 this.isTutorialMode = true;
                 this.currentTutorialIndex = index;
                 
-                // Show tutorial on first level
-                if (index === 0 && this.tutorialManager) {
+                // Show tutorial on first two levels (0 and 1)
+                if ((index === 0 || index === 1) && this.tutorialManager) {
                     setTimeout(() => {
-                        this.tutorialManager.showIntro();
+                        this.tutorialManager.showIntro(index);
                     }, 500);
                 }
             }
@@ -1250,25 +2075,29 @@
                 this.active = false;
                 this.currentStep = 0;
                 this.steps = [];
+                this.currentTutorialLevel = 0;
+                this.flaggingDisabled = false;
+                this.revealingDisabled = false;
+                this.completedCells = new Set(); // Track completed cells to avoid double counting
                 
                 // Define tutorial steps for Level 1 (Flag mechanic)
                 this.level1Steps = [
                     {
-                        message: "The 6 means: 6 mines around it! Tap this mine to flag it",
+                        message: "The 6 means: 6 mines around it! So all 6 white cells are MINES 💣.<br>Tap & HOLD this mine to flag it 🚩",
                         icon: "💡",
                         targetCell: { r: 1, c: 1 },
                         action: 'flag',
                         flagState: true
                     },
                     {
-                        message: "Perfect! Each neighbor is a mine. Flag this one (2/6)",
+                        message: "Perfect! Tap & Hold to flag this one (2/6)",
                         icon: "✨",
                         targetCell: { r: 1, c: 2 },
                         action: 'flag',
                         flagState: true
                     },
                     {
-                        message: "Great! All 6 cells around the number are mines (3/6)",
+                        message: "Great! All 6 cells around the number 6 are mines (3/6)",
                         icon: "🎯",
                         targetCell: { r: 2, c: 1 },
                         action: 'flag',
@@ -1289,22 +2118,80 @@
                         flagState: true
                     },
                     {
-                        message: "Last mine! Tap to complete the tutorial! (6/6)",
+                        message: "Last mine! Tap & hold to complete the tutorial! (6/6)",
                         icon: "🎉",
                         targetCell: { r: 3, c: 2 },
                         action: 'flag',
                         flagState: true
                     }
                 ];
+                
+                // Define tutorial steps for Level 2 (Reveal mechanic - Double Tap)
+                this.level2Steps = [
+                    {
+                        message: "💡 0 means there are NO mines around it. All neighbors are safe! DOUBLE TAP to reveal this safe cell 👆👆",
+                        icon: "✅",
+                        targetCell: { r: 1, c: 1 },
+                        action: 'reveal'
+                    },
+                    {
+                        message: "Perfect! The 0 means: 0 mines around it. All neighbors are safe!",
+                        icon: "💡",
+                        targetCell: { r: 1, c: 2 },
+                        action: 'reveal'
+                    },
+                    {
+                        message: "Great! When you see 0, all surrounding cells are safe to reveal",
+                        icon: "✨",
+                        targetCell: { r: 2, c: 1 },
+                        action: 'reveal'
+                    },
+                    {
+                        message: "Excellent! 0 = guaranteed safety for all neighbors",
+                        icon: "🎯",
+                        targetCell: { r: 2, c: 3 },
+                        action: 'reveal'
+                    },
+                    {
+                        message: "Almost done! Remember: 0 means zero danger around that cell",
+                        icon: "🧠",
+                        targetCell: { r: 3, c: 1 },
+                        action: 'reveal'
+                    },
+                    {
+                        message: "Last one! Use 0s to safely expand your revealed area",
+                        icon: "🎉",
+                        targetCell: { r: 3, c: 2 },
+                        action: 'reveal'
+                    }
+                ];
             }
 
-            showIntro() {
+            showIntro(levelIndex = 0) {
                 const overlay = document.getElementById('tutorial-overlay');
                 const title = document.getElementById('tutorial-title');
                 const description = document.getElementById('tutorial-description');
+                const startBtn = document.getElementById('tutorial-start-btn');
+                const nextLevelBtn = document.getElementById('next-level-btn');
                 
-                title.textContent = '🎓 Level 1: Understanding Numbers';
-                description.innerHTML = 'The number <strong>6</strong> means there are<br><strong>6 mines</strong> around that cell!<br><br>💡 Tap cells to flag all the mines';
+                // Hide UI elements when showing tutorial intro
+                this.hideUIElements();
+                
+                // Reset button display
+                startBtn.style.display = 'inline-block';
+                nextLevelBtn.style.display = 'none';
+                
+                if (levelIndex === 0) {
+                    // Level 1: Flag mechanic
+                    title.textContent = '🎓 Level 1: Understanding Numbers';
+                    description.innerHTML = 'The number <strong>6</strong> means there are<br><strong>6 mines</strong> around that cell!<br><br>💡 Tap & hold cells to flag all the mines';
+                    this.currentTutorialLevel = 0;
+                } else if (levelIndex === 1) {
+                    // Level 2: Reveal mechanic
+                    title.textContent = '🎓 Level 2: Revealing Safe Cells';
+                    description.innerHTML = '<strong>DOUBLE TAP</strong> to reveal a cell 👆👆<br><br>⚠️ <strong>Only reveal cells you\'re SURE are safe!</strong><br>💥 Revealing a mine = lose a life<br><br>';
+                    this.currentTutorialLevel = 1;
+                }
                 
                 overlay.classList.add('active');
             }
@@ -1316,7 +2203,20 @@
                 // Initialize tutorial
                 this.active = true;
                 this.currentStep = 0;
-                this.steps = this.level1Steps;
+                this.completedCells.clear(); // Reset completed cells tracker
+                
+                // Set steps based on tutorial level
+                if (this.currentTutorialLevel === 0) {
+                    this.steps = this.level1Steps;
+                    this.flaggingDisabled = false;
+                    this.revealingDisabled = true; // Disable revealing for flag tutorial
+                } else if (this.currentTutorialLevel === 1) {
+                    this.steps = this.level2Steps;
+                    this.flaggingDisabled = true; // Disable flagging for reveal tutorial
+                    this.revealingDisabled = false;
+                }
+                
+                // UI elements are already hidden from showIntro(), no need to hide again
                 
                 // Show progress
                 document.getElementById('tutorial-progress').classList.add('active');
@@ -1343,12 +2243,37 @@
                 const messageText = document.getElementById('tutorial-message-text');
                 const messageIcon = document.getElementById('tutorial-message-icon');
                 
-                messageText.textContent = step.message;
+                messageText.innerHTML = step.message;
                 messageIcon.textContent = step.icon;
                 messageBox.classList.add('active');
                 
-                // Highlight target cell
-                this.highlightCell(step.targetCell.r, step.targetCell.c);
+                // Highlight next available target cell that hasn't been completed
+                this.highlightNextAvailableCell();
+            }
+
+            highlightNextAvailableCell() {
+                // Remove previous highlights
+                document.querySelectorAll('.hex-cell.tutorial-highlight').forEach(cell => {
+                    cell.classList.remove('tutorial-highlight');
+                });
+                
+                // Find the first available cell that hasn't been completed
+                for (let i = this.currentStep; i < this.steps.length; i++) {
+                    const step = this.steps[i];
+                    const cellKey = `${step.targetCell.r},${step.targetCell.c}`;
+                    
+                    // Skip if this cell was already completed
+                    if (this.completedCells.has(cellKey)) {
+                        continue;
+                    }
+                    
+                    // Highlight this cell
+                    const cell = document.querySelector(`[data-row="${step.targetCell.r}"][data-col="${step.targetCell.c}"]`);
+                    if (cell) {
+                        cell.classList.add('tutorial-highlight');
+                    }
+                    break; // Only highlight one cell
+                }
             }
 
             highlightCell(row, col) {
@@ -1364,45 +2289,64 @@
                 }
             }
 
+            isValidActionForTutorial(row, col, action, newState) {
+                // Skip if this cell was already completed
+                const cellKey = `${row},${col}`;
+                if (this.completedCells.has(cellKey)) {
+                    return false;
+                }
+                
+                const cell = this.game.grid[row][col];
+                
+                // Level 1: Flagging tutorial - accept flagging any unrevealed mine
+                if (this.currentTutorialLevel === 0 && action === 'flag') {
+                    return cell.isMine && newState === true && !cell.isRevealed;
+                }
+                
+                // Level 2: Revealing tutorial - accept revealing any safe cell with 0 neighbors
+                if (this.currentTutorialLevel === 1 && action === 'reveal') {
+                    return !cell.isMine && cell.neighborMines === 0;
+                }
+                
+                return false;
+            }
+
             onCellAction(row, col, action, newState, oldState) {
                 if (!this.active || this.currentStep >= this.steps.length) return;
                 
                 const step = this.steps[this.currentStep];
                 
-                // Check if this is the correct cell and action
-                if (row === step.targetCell.r && 
-                    col === step.targetCell.c && 
-                    action === step.action) {
+                // Check if this action is valid for the tutorial (flexible matching)
+                if (action === step.action && this.isValidActionForTutorial(row, col, action, newState)) {
+                    // Mark this cell as completed
+                    const cellKey = `${row},${col}`;
+                    this.completedCells.add(cellKey);
                     
-                    // Check if the flag state matches what we expect
-                    if (action === 'flag' && newState === step.flagState) {
-                        this.onCorrectAction(row, col);
-                    }
+                    this.onCorrectAction(row, col);
                 }
             }
 
             onCorrectAction(row, col) {
-                // Add success animation
+                // Remove highlight from the completed cell
                 const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
                 if (cell) {
-                    cell.classList.add('tutorial-success');
-                    setTimeout(() => {
-                        cell.classList.remove('tutorial-success');
-                    }, 500);
+                    cell.classList.remove('tutorial-highlight');
                 }
-                
-                // Remove highlight
-                cell.classList.remove('tutorial-highlight');
                 
                 // Move to next step after a short delay
                 setTimeout(() => {
                     this.currentStep++;
                     this.showStep(this.currentStep);
-                }, 600);
+                }, 100);
             }
 
             complete() {
                 this.active = false;
+                this.flaggingDisabled = false; // Re-enable flagging
+                this.revealingDisabled = false; // Re-enable revealing
+                
+                // Show UI elements again after tutorial completion
+                this.showUIElements();
                 
                 // Hide tutorial elements
                 document.getElementById('tutorial-message').classList.remove('active');
@@ -1413,37 +2357,67 @@
                     cell.classList.remove('tutorial-highlight');
                 });
                 
-                // Show completion message
-                const overlay = document.getElementById('tutorial-overlay');
-                const title = document.getElementById('tutorial-title');
-                const description = document.getElementById('tutorial-description');
-                const startBtn = document.getElementById('tutorial-start-btn');
-                
-                title.textContent = '🎉 Tutorial Complete!';
-                description.innerHTML = 'Now you understand!<br>Numbers show how many mines are nearby.';
-                startBtn.style.display = 'none';
-                
-                overlay.classList.add('active');
-                
-                // Auto-close after 2 seconds
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                }, 2000);
+                // Directly show level complete with tutorial message combined
+                this.game.showLevelCompleteOverlay();
             }
 
             reset() {
                 this.active = false;
                 this.currentStep = 0;
+                this.flaggingDisabled = false; // Re-enable flagging
+                this.revealingDisabled = false; // Re-enable revealing
+                this.completedCells.clear(); // Reset completed cells tracker
+                
+                // Show UI elements when resetting tutorial
+                this.showUIElements();
                 
                 // Hide all tutorial elements
                 document.getElementById('tutorial-overlay').classList.remove('active');
                 document.getElementById('tutorial-message').classList.remove('active');
                 document.getElementById('tutorial-progress').classList.remove('active');
                 
+                // Reset buttons
+                document.getElementById('tutorial-start-btn').style.display = 'inline-block';
+                document.getElementById('next-level-btn').style.display = 'none';
+                
                 // Remove all highlights
                 document.querySelectorAll('.hex-cell.tutorial-highlight').forEach(cell => {
                     cell.classList.remove('tutorial-highlight');
                 });
+            }
+
+            hideUIElements() {
+                // Hide mines left display and lives display for tutorial levels 1 and 2
+                const minesLeftDisplay = document.querySelector('.mines-left-display');
+                const livesDisplay = document.getElementById('lives-display');
+                const tutorialPlaceholder = document.getElementById('tutorial-placeholder');
+                
+                if (minesLeftDisplay) {
+                    minesLeftDisplay.classList.add('hidden');
+                }
+                if (livesDisplay) {
+                    livesDisplay.classList.add('hidden');
+                }
+                if (tutorialPlaceholder) {
+                    tutorialPlaceholder.classList.add('active');
+                }
+            }
+
+            showUIElements() {
+                // Show mines left display and lives display
+                const minesLeftDisplay = document.querySelector('.mines-left-display');
+                const livesDisplay = document.getElementById('lives-display');
+                const tutorialPlaceholder = document.getElementById('tutorial-placeholder');
+                
+                if (minesLeftDisplay) {
+                    minesLeftDisplay.classList.remove('hidden');
+                }
+                if (livesDisplay) {
+                    livesDisplay.classList.remove('hidden');
+                }
+                if (tutorialPlaceholder) {
+                    tutorialPlaceholder.classList.remove('active');
+                }
             }
         }
 
@@ -1461,6 +2435,10 @@
                     game.loadLevel(levelData);
                     // Disable tutorial mode when manually loading a level
                     game.isTutorialMode = false;
+                    // Show UI elements for custom levels
+                    if (game.tutorialManager) {
+                        game.tutorialManager.showUIElements();
+                    }
                 } catch (error) {
                     console.error("Error loading or parsing level file:", error);
                     alert("Failed to load level. Please make sure it's a valid level file.");
