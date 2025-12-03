@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FretMaster - Guitar Note Trainer</title>
+    <style>
+        /* --- COPY OF ORIGINAL STYLES FOR CONSISTENCY --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            /* Kept the original gradient for brand consistency, but arguably could shift to warmer wood tones if desired. 
+               Sticking to the requested "same format" means keeping the studio identity colors. */
+            background: linear-gradient(140deg, rgba(102, 126, 234, 0.35), rgba(118, 75, 162, 0.6)),
+                        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 55%),
+                        radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.2), transparent 50%),
+                        #15193a;
+            color: rgba(255, 255, 255, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 60px;
+        }
+
+        .page {
+            width: min(1100px, 100%);
+            backdrop-filter: blur(14px);
+            background: rgba(15, 24, 57, 0.72);
+            border-radius: 32px;
+            padding: clamp(32px, 5vw, 64px);
+            box-shadow: 0 30px 80px rgba(8, 10, 30, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(24px, 5vw, 48px);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(24px, 5vw, 40px);
+            align-items: center;
+        }
+
+        .icon-frame {
+            position: relative;
+            width: min(240px, 100%);
+            aspect-ratio: 1;
+            margin: 0 auto;
+            padding: clamp(10px, 2.5vw, 16px);
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2), transparent 65%),
+                        linear-gradient(145deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.9));
+            border-radius: 36px;
+            box-shadow: 0 28px 40px rgba(102, 126, 234, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-frame::before {
+            content: "";
+            position: absolute;
+            inset: clamp(10px, 2.5vw, 16px);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            pointer-events: none;
+        }
+
+        .icon-frame img {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            object-fit: cover; /* Changed to cover for placeholders */
+            background: rgba(9, 13, 40, 0.35);
+            box-shadow: inset 0 6px 18px rgba(255, 255, 255, 0.06);
+        }
+
+        .hero-copy {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(18px, 3vw, 28px);
+        }
+
+        h1 {
+            font-size: clamp(2.4rem, 4vw, 3.6rem);
+            letter-spacing: 0.08em;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        h1 span {
+            display: block;
+            font-size: clamp(1.2rem, 2.6vw, 1.8rem);
+            letter-spacing: 0.4em;
+            font-weight: 400;
+            margin-top: 6px;
+            opacity: 0.55;
+        }
+
+        .tagline {
+            max-width: 450px; /* Slightly wider for technical music text */
+            font-size: clamp(1.05rem, 2.1vw, 1.25rem);
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .cta-group {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .cta-group a {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 26px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            box-shadow: 0 18px 28px rgba(102, 126, 234, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .cta-group a:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 40px rgba(102, 126, 234, 0.45);
+        }
+
+        .cta-group a.download {
+            background: linear-gradient(135deg, #fda085 0%, #f6d365 100%);
+            color: #0a0e24;
+            box-shadow: 0 20px 32px rgba(253, 160, 133, 0.4);
+        }
+
+        .cta-group a.download:hover {
+            box-shadow: 0 26px 44px rgba(253, 160, 133, 0.5);
+        }
+
+        .section-title {
+            margin-top: clamp(36px, 5vw, 56px);
+            font-size: clamp(1.8rem, 3.2vw, 2.3rem);
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .section-title span {
+            display: block;
+            margin-top: 8px;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            letter-spacing: 0.36em;
+            font-weight: 400;
+            opacity: 0.45;
+        }
+
+        .gallery {
+            margin-top: clamp(28px, 4vw, 48px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: clamp(18px, 3vw, 28px);
+        }
+
+        .shot {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 28px 48px rgba(6, 12, 34, 0.55);
+            background: rgba(15, 24, 57, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .shot:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 40px 70px rgba(6, 12, 34, 0.6);
+        }
+
+        .shot img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            min-height: 400px; /* Ensure generic placeholders have height */
+        }
+
+        .shot::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10, 14, 36, 0) 40%, rgba(10, 14, 36, 0.35) 100%);
+            pointer-events: none;
+        }
+
+        .contact-panel {
+            margin-top: clamp(48px, 6vw, 72px);
+            padding: clamp(32px, 5vw, 48px);
+            border-radius: 28px;
+            background: linear-gradient(145deg, rgba(32, 42, 92, 0.85), rgba(22, 28, 68, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 32px 60px rgba(7, 10, 32, 0.55);
+            display: grid;
+            gap: clamp(24px, 4vw, 36px);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            align-items: center;
+        }
+
+        .contact-panel h2 {
+            font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .contact-panel p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            line-height: 1.9;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 380px;
+        }
+
+        .contact-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .contact-actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 28px;
+            border-radius: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .contact-actions a.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 18px 36px rgba(102, 126, 234, 0.45);
+        }
+
+        .contact-actions a.primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 44px rgba(102, 126, 234, 0.55);
+        }
+
+        .contact-actions a.secondary {
+            background: rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 12px 24px rgba(8, 12, 36, 0.35);
+        }
+
+        .contact-actions a.secondary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 36px rgba(8, 12, 36, 0.45);
+        }
+
+        footer {
+            margin-top: clamp(44px, 7vw, 72px);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        footer a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 24px 16px 48px;
+            }
+
+            .page {
+                border-radius: 24px;
+                padding: 28px 22px;
+            }
+
+            .icon-frame {
+                width: min(200px, 100%);
+                padding: 14px;
+            }
+
+            .contact-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header>
+            <div class="hero">
+                <div class="icon-frame">
+                    <!-- Placeholder Icon - Replace src with your actual app icon -->
+                    <img src="https://placehold.co/512x512/15193a/667eea?text=FM&font=Montserrat" alt="FretMaster app icon">
+                </div>
+                <div class="hero-copy">
+                    <h1>
+                        FretMaster
+                        <span>Unlock the Fretboard</span>
+                    </h1>
+                    <p class="tagline">
+                        Stop guessing and start playing. FretMaster turns music theory into muscle memory with fast accurate pitch detection, step-by-step lessons, and custom practice mode designed for guitarists of all levels.
+                    </p>
+                    <div class="cta-group">
+                        <a href="https://apps.apple.com" class="download" target="_blank" rel="noopener">Start Shredding</a>
+                        <a href="#features">See Features</a>
+                        <a href="index.html">Back to Studio</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="features">
+            <h2 class="section-title">
+                Gameplay
+                <span>Learn while you play</span>
+            </h2>
+
+            <div class="gallery">
+                <figure class="shot">
+                    <!-- Placeholder Screenshot 1 -->
+                    <img src="https://placehold.co/600x1200/15193a/667eea?text=Fretboard+Visualizer&font=Montserrat" alt="Fretboard interface showing active scale notes">
+                </figure>
+                <figure class="shot">
+                    <!-- Placeholder Screenshot 2 -->
+                    <img src="https://placehold.co/600x1200/15193a/667eea?text=Timed+Drills&font=Montserrat" alt="Timed note identification drill">
+                </figure>
+                <figure class="shot">
+                    <!-- Placeholder Screenshot 3 -->
+                    <img src="https://placehold.co/600x1200/15193a/667eea?text=Progress+Stats&font=Montserrat" alt="User progress statistics and mastery level">
+                </figure>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-panel">
+            <div>
+                <h2>Hit a sour note?</h2>
+                <p>
+                    Whether you found a bug in our tuner or want to request a specific scale mode, we are all ears. Our team of musicians reviews feedback daily.
+                </p>
+            </div>
+            <div class="contact-actions">
+                <a class="primary" href="mailto:support@ltngames.com">Contact Support</a>
+                <a class="secondary" href="index.html">Meet the developers</a>
+            </div>
+        </section>
+
+        <footer>
+            <span>© 2025 LTN Games. Built for the modern musician.</span>
+            <div>
+                <a href="mailto:support@ltngames.com">Get in touch</a>
+                <span aria-hidden="true">·</span>
+                <a href="fretmaster-privacy.html">Privacy Policy</a>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

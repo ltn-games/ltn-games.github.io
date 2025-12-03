@@ -24,6 +24,12 @@
             margin: 0 auto;
         }
 
+        .games-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
         header {
             text-align: center;
             color: white;
@@ -50,6 +56,10 @@
             padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .game-card:nth-child(2) {
+            animation: fadeInUp 0.8s ease-out 0.3s both;
         }
 
         .game-icon {
@@ -259,41 +269,80 @@
             <p class="tagline">Creating Mobile Puzzle Games</p>
         </header>
 
-        <div class="game-card">
-            <div class="game-icon">
-                <img src="1024x1024bb.png" alt="Number Path game icon">
+        <div class="games-container">
+            <div class="game-card">
+                <div class="game-icon">
+                    <img src="1024x1024bb.png" alt="Number Path game icon">
+                </div>
+
+                <h2>Number Path</h2>
+                
+                <div class="badge-container">
+                    <span class="zen-badge">🧘 Zen Puzzle Experience</span>
+                </div>
+
+                <p class="description">
+                    A peaceful number matching game where you clear pairs and sums of 10 by connecting numbers with a clear path. Find harmony in numbers as circles light up on a serene grid.
+                </p>
+
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Match identical number pairs to clear them</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Combine numbers that sum to 10</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Connect with clear horizontal or vertical paths</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Relaxing gameplay with beautiful minimalist design</span>
+                    </div>
+                </div>
+
+                <a href="numberpath.html" class="cta-button">Explore Number Path</a>
             </div>
 
-            <h2>Number Path</h2>
-            
-            <div class="badge-container">
-                <span class="zen-badge">🧘 Zen Puzzle Experience</span>
+            <div class="game-card">
+                <div class="game-icon">
+                    <img src="https://placehold.co/512x512/15193a/667eea?text=FM&font=Montserrat" alt="FretMaster app icon">
+                </div>
+
+                <h2>FretMaster</h2>
+                
+                <div class="badge-container">
+                    <span class="zen-badge">🎸 Guitar Note Trainer</span>
+                </div>
+
+                <p class="description">
+                    Stop guessing and start playing. FretMaster turns music theory into muscle memory with interactive note identification, scale running, and chord shape drills designed for guitarists of all levels.
+                </p>
+
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Fast accurate pitch detection</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Step-by-step lessons</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Custom practice mode</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"></div>
+                        <span>Track your progress and mastery levels</span>
+                    </div>
+                </div>
+
+                <a href="fretmaster.html" class="cta-button">Explore FretMaster</a>
             </div>
-
-            <p class="description">
-                A peaceful number matching game where you clear pairs and sums of 10 by connecting numbers with a clear path. Find harmony in numbers as circles light up on a serene grid.
-            </p>
-
-            <div class="features">
-                <div class="feature-item">
-                    <div class="feature-icon"></div>
-                    <span>Match identical number pairs to clear them</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon"></div>
-                    <span>Combine numbers that sum to 10</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon"></div>
-                    <span>Connect with clear horizontal or vertical paths</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon"></div>
-                    <span>Relaxing gameplay with beautiful minimalist design</span>
-                </div>
-            </div>
-
-            <a href="numberpath.html" class="cta-button">Explore Number Path</a>
         </div>
 
         <div class="contact-section">
