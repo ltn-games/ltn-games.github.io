@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Get help with Guitar Blast: guitar note detection, microphone access, difficulty, PRO access, restoring purchases, and subscriptions.">
+  <title>Help &amp; Support — Guitar Blast</title>
+  <link rel="stylesheet" href="guitarblast-legal.css">
+  <style>
+    html { scroll-behavior: smooth; }
+    .wrap { width: min(860px, calc(100% - 48px)); }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    header > a:last-child { font-size: .9rem; text-decoration: none; }
+    .lead { max-width: 620px; color: var(--muted); font-size: 1.1rem; margin-top: 22px; }
+    .topics { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 48px; }
+    .topics a { border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; text-decoration: none; font-size: .9rem; }
+    .topics a:hover { border-color: var(--orange); }
+    section { margin-top: 48px; scroll-margin-top: 24px; }
+    section > h2 { font-size: 1.55rem; letter-spacing: -.025em; margin-bottom: 20px; }
+    details { border-top: 1px solid var(--line); }
+    details:last-child { border-bottom: 1px solid var(--line); }
+    summary { cursor: pointer; padding: 20px 0; font-weight: 650; line-height: 1.5; }
+    summary::marker { color: var(--orange); }
+    summary:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    .answer { padding: 0 0 12px 20px; }
+    .answer ol, .answer ul { padding-left: 1.3em; margin: 0 0 18px; }
+    .answer li { padding-left: 4px; margin-bottom: 10px; }
+    .answer strong { color: var(--ink); }
+    .note { background: #24221e; border-left: 3px solid var(--orange); padding: 14px 18px; border-radius: 0 8px 8px 0; }
+    .contact { background: #24221e; border: 1px solid var(--line); border-radius: 18px; padding: 32px; }
+    .contact ul { margin-bottom: 24px; }
+    .contact li { margin-bottom: 6px; }
+    .contact .email { color: #1c1711; background: var(--orange); display: inline-block; padding: 12px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+    .contact .email:hover { background: #ffc27f; }
+    .contact .small { color: var(--muted); font-size: .9rem; margin: 18px 0 0; }
+    @media (max-width: 600px) { .wrap { width: calc(100% - 36px); } header { flex-wrap: wrap; } .contact { padding: 24px 20px; } .answer { padding-left: 8px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { details > .answer { display: block !important; } .topics { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><a class="brand" href="guitarblast.html">GUITAR <span>BLAST</span></a><a href="#contact">Contact support</a></header>
+    <main>
+      <div class="eyebrow">Help &amp; support</div>
+      <h1>Back to playing.</h1>
+      <p class="lead">Find answers to common questions about Guitar Blast. Start with the tips below, or get in touch if you need a hand.</p>
+      <nav class="topics" aria-label="Support topics">
+        <a href="#guitar">Guitar &amp; microphone</a>
+        <a href="#gameplay">Gameplay</a>
+        <a href="#purchases">Purchases &amp; subscriptions</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <section id="guitar" aria-labelledby="guitar-title">
+        <h2 id="guitar-title">Guitar &amp; microphone</h2>
+        <details open>
+          <summary>Why are my guitar notes not detected?</summary>
+          <div class="answer">
+            <ol>
+              <li><strong>Check microphone access.</strong> On your iPhone or iPad, open Settings &gt; Privacy &amp; Security &gt; Microphone and enable Guitar Blast. If access is restricted, check Screen Time restrictions. If the app is not listed, open the tuner or a guitar mode to trigger the permission request. <a href="https://support.apple.com/guide/iphone/control-access-to-hardware-features-iph168c4bbd5/ios">Apple’s microphone permission guide</a></li>
+              <li><strong>Try the built-in microphone.</strong> Disconnect Bluetooth headphones and other external audio devices, then try again. Bluetooth audio can add delay.</li>
+              <li><strong>Reduce background noise.</strong> Play in a quiet place, lower background music, and keep the guitar near your device. Make sure the microphone is uncovered.</li>
+              <li><strong>Tune your guitar.</strong> Use the in-app tuner. Lessons use standard tuning: E A D G B E, from the thickest string to the thinnest.</li>
+              <li><strong>Play one clear note at a time.</strong> Mute the previous string before playing the next note. Avoid chords and overlapping notes.</li>
+            </ol>
+            <p>If notes still do not register, close and reopen Guitar Blast, then test a single open string in the tuner. Tell us whether the tuner responds when you <a href="#contact">contact support</a>.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Why are some notes wrong or slow to register?</summary>
+          <div class="answer">
+            <ul>
+              <li>Check your tuning first. If detection is delayed, disconnect Bluetooth audio and reduce background noise.</li>
+              <li>Keep unused strings muted, and let each note register before playing the next one.</li>
+              <li>Press the string just behind the fret with enough pressure for a clean sound. Fret buzz can make notes harder to detect.</li>
+              <li>If open strings are in tune but fretted notes are consistently sharp or flat, your guitar may need an intonation adjustment.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Can I practice without microphone access or a guitar?</summary>
+          <div class="answer"><p>Yes. Use a tapping mode to practice notes on the screen. Guitar modes and the tuner require microphone access.</p><p>Microphone input is analyzed on your device to detect pitch. Guitar Blast does not save or upload microphone recordings. Read the <a href="guitarblast-privacy.html">Privacy Policy</a> for more information.</p></div>
+        </details>
+      </section>
+
+      <section id="gameplay" aria-labelledby="gameplay-title">
+        <h2 id="gameplay-title">Gameplay &amp; progress</h2>
+        <details>
+          <summary>The game is too hard. How can I make it easier?</summary>
+          <div class="answer"><p>Open Settings in Guitar Blast and set Difficulty to <strong>Casual</strong>. Restart the level to apply the change. Revisit earlier levels to build speed and accuracy before moving on.</p></div>
+        </details>
+        <details>
+          <summary>Why are chapters still locked after I buy PRO?</summary>
+          <div class="answer"><p>PRO unlocks paid content, while campaign chapters still require stars earned by playing. Check the star requirement shown on the locked chapter.</p><p>If PRO access itself is missing, open Settings in the app and tap <strong>Restore Purchases</strong>.</p></div>
+        </details>
+        <details>
+          <summary>Will Restore Purchases recover my stars and scores?</summary>
+          <div class="answer"><p>Restore Purchases restores purchase access. It does not recover stars or scores removed when the app was deleted.</p><p>Game progress and preferences are stored on your device. Device or iCloud backups may include this data, depending on your Apple settings. If you are troubleshooting a problem, try closing and reopening the app or restarting your device before deleting the app.</p></div>
+        </details>
+        <details>
+          <summary>The app is frozen or closes unexpectedly. What should I try?</summary>
+          <div class="answer"><ol><li>Close Guitar Blast and open it again.</li><li>Restart your iPhone or iPad.</li><li>Check the App Store for an available Guitar Blast update.</li></ol><p>If the problem continues, <a href="#contact">contact us</a> with the game mode or level and the steps that led to the problem.</p></div>
+        </details>
+      </section>
+
+      <section id="purchases" aria-labelledby="purchases-title">
+        <h2 id="purchases-title">Purchases &amp; subscriptions</h2>
+        <details>
+          <summary>How do I restore a purchase after reinstalling or changing devices?</summary>
+          <div class="answer"><ol><li>Make sure the App Store is signed in with the Apple Account used for the original purchase.</li><li>Connect to the internet.</li><li>Open Settings in Guitar Blast and tap <strong>Restore Purchases</strong>.</li></ol><p>A subscription must still be active to restore subscription access. If access is still missing, check your subscription status in your device’s Settings &gt; your name &gt; Subscriptions, then <a href="#contact">contact us</a>.</p></div>
+        </details>
+        <details>
+          <summary>How do I manage or cancel my subscription?</summary>
+          <div class="answer"><p>Open your device’s Settings, tap your name, then tap <strong>Subscriptions</strong> and choose Guitar Blast. You can also open <a href="https://apps.apple.com/account/subscriptions">Apple’s subscription management page</a>.</p><p>Cancellation stops future renewals; paid access continues until the current period expires unless Apple issues a refund or revokes the purchase. See the <a href="guitarblast-terms.html">Terms of Use</a> for billing details.</p><p class="note"><strong>Deleting Guitar Blast does not cancel a subscription.</strong></p></div>
+        </details>
+        <details>
+          <summary>How do I request a refund or get help with billing?</summary>
+          <div class="answer"><p>Visit <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a> and sign in with the Apple Account used for the purchase. Choose “Request a refund,” select a reason and the purchase, then submit your request. Apple reviews refund requests; eligibility depends on Apple’s policies and applicable law.</p><p>For payment problems or unfamiliar charges, visit <a href="https://support.apple.com/billing">Apple’s billing support</a>. For a purchase that is active but not unlocking PRO in Guitar Blast, <a href="#contact">contact us</a>.</p></div>
+        </details>
+      </section>
+
+      <section class="contact" id="contact" aria-labelledby="contact-title">
+        <h2 id="contact-title">Still need help?</h2>
+        <p>Email us, or open Settings &gt; Contact Us from the app’s main menu. To help us investigate, include:</p>
+        <ul>
+          <li>Your device model, iOS or iPadOS version, and Guitar Blast version.</li>
+          <li>The affected game mode or level.</li>
+          <li>What you expected, what happened, and the steps to reproduce it.</li>
+          <li>For note detection issues: your guitar type, whether headphones or other audio devices are connected, and whether the in-app tuner detects a note.</li>
+        </ul>
+        <a class="email" href="mailto:guitarblastapp@gmail.com?subject=Guitar%20Blast%20Support">guitarblastapp@gmail.com</a>
+        <p class="small">Screenshots can help explain a problem. Please leave out passwords, payment-card details, and other sensitive information.</p>
+      </section>
+    </main>
+    <footer><a href="guitarblast.html">← Guitar Blast</a><a href="guitarblast-privacy.html">Privacy Policy</a><a href="guitarblast-terms.html">Terms of Use</a></footer>
+  </div>
+</body>
+</html>
