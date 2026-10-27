@@ -15,6 +15,7 @@
     header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:28px 0; }
     .brand { text-decoration:none; font-weight:850; letter-spacing:.04em; font-size:1.1rem; }
     .brand span { color:var(--orange); }
+    nav { display:flex; flex-wrap:wrap; gap:20px; }
     nav a { color:#ded8cf; text-decoration:none; font-size:.9rem; }
     nav a:hover, footer a:hover { color:var(--orange); }
     .hero { display:grid; grid-template-columns:1.05fr .95fr; gap:60px; align-items:center; padding:90px 0 100px; }
@@ -37,7 +38,7 @@
     .contact { background:#24221e; border:1px solid var(--line); border-radius:18px; padding:40px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
     .contact h2 { font-size:2rem; margin:0 0 8px; }
     .contact a { color:var(--orange); font-weight:700; overflow-wrap:anywhere; }
-    footer { display:flex; justify-content:space-between; gap:20px; padding:38px 0; color:#918d85; font-size:.85rem; }
+    footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:20px; padding:38px 0; color:#918d85; font-size:.85rem; }
     footer a { text-decoration:none; }
     @media(max-width:760px) { .wrap { width:min(100% - 36px, 560px); } header { padding:22px 0; } .hero { grid-template-columns:1fr; gap:36px; padding:55px 0 70px; } .art { min-height:300px; } .intro { grid-template-columns:1fr; gap:30px; padding:55px 0; } .contact { display:block; padding:28px; } .contact a { display:inline-block; margin-top:20px; } }
     @media(max-width:420px) { .features { grid-template-columns:1fr; } footer { flex-direction:column; } }
@@ -47,7 +48,7 @@
   <div class="wrap">
     <header>
       <a class="brand" href="guitarblast.html">GUITAR <span>BLAST</span></a>
-      <nav aria-label="Main navigation"><a href="#contact">Contact</a></nav>
+      <nav aria-label="Main navigation"><a href="guitarblast-support.html">Support</a><a href="#contact">Contact</a></nav>
     </header>
     <main>
       <section class="hero">
@@ -72,7 +73,7 @@
       </section>
       <section class="contact" id="contact"><div><h2>Let's talk guitar.</h2><p>Questions, feedback, or ideas? We'd love to hear from you.</p></div><a href="mailto:guitarblastapp@gmail.com">guitarblastapp@gmail.com ↗</a></section>
     </main>
-    <footer><span>© Guitar Blast</span><a href="guitarblast-privacy.html">Privacy Policy</a><a href="guitarblast-terms.html">Terms of Use</a><a href="index.html">← Back to LTN Games</a></footer>
+    <footer><span>© Guitar Blast</span><a href="guitarblast-support.html">Support</a><a href="guitarblast-privacy.html">Privacy Policy</a><a href="guitarblast-terms.html">Terms of Use</a><a href="index.html">← Back to LTN Games</a></footer>
   </div>
 </body>
 </html>
